@@ -1,181 +1,118 @@
+import { json } from "stream/consumers";
 import { Treeviz } from "../src";
+// load json data
+import jsonData from './tree_states.json';
 
-var data_1 = [
-  {
-    id: 1,
-    text_1: "Chaos",
-    text_2: "Void",
-    father: null,
-    color: "#FF5722",
-  },
-  {
-    id: 2,
-    text_1: "Tartarus",
-    text_2: "Abyss",
-    father: 1,
-    color: "#FFC107",
-  },
-  {
-    id: 3,
-    text_1: "Gaia",
-    text_2: "Earth",
-    father: 1,
-    color: "#8BC34A",
-  },
-  {
-    id: 4,
-    text_1: "Eros",
-    text_2: "Desire",
-    father: 1,
-    color: "#00BCD4",
-  },
-];
-var data_2 = [
-  {
-    id: 1,
-    text_1: "Chaos",
-    text_2: " Void",
-    father: null,
-    color: "#2196F3",
-  },
-  {
-    id: 2,
-    text_1: "Tartarus",
-    text_2: "Abyss",
-    father: 1,
-    color: "#F44336",
-  },
-  {
-    id: 3,
-    text_1: "Gaia",
-    text_2: "Earth",
-    father: 1,
-    color: "#673AB7",
-  },
-  {
-    id: 4,
-    text_1: "Eros",
-    text_2: "Desire",
-    father: 1,
-    color: "#009688",
-  },
-  {
-    id: 5,
-    text_1: "Uranus",
-    text_2: "Sky",
-    father: 3,
-    color: "#4CAF50",
-  },
-  {
-    id: 6,
-    text_1: "Ourea",
-    text_2: "Mountains",
-    father: 3,
-    color: "#FF9800",
-  },
-];
-var data_3 = [
-  {
-    id: 1,
-    text_1: "Chaos",
-    text_2: "Void",
-    father: null,
-    color: "#2196F3",
-  },
-  {
-    id: 2,
-    text_1: "Tartarus",
-    text_2: "Abyss",
-    father: 1,
-    color: "#F44336",
-  },
-  {
-    id: 3,
-    text_1: "Gaia",
-    text_2: "Earth",
-    father: 1,
-    color: "#673AB7",
-  },
-  {
-    id: 4,
-    text_1: "Eros",
-    text_2: "Desire",
-    father: 1,
-    color: "#009688",
-  },
-  {
-    id: 5,
-    text_1: "Uranus",
-    text_2: "Sky",
-    father: 3,
-    color: "#4CAF50",
-  },
-  {
-    id: 6,
-    text_1: "Ourea",
-    text_2: "Mountains",
-    father: 3,
-    color: "#FF9800",
-  },
-  {
-    id: 7,
-    text_1: "Hermes",
-    text_2: " Sky",
-    father: 4,
-    color: "#2196F3",
-  },
-  {
-    id: 8,
-    text_1: "Aphrodite",
-    text_2: "Love",
-    father: 4,
-    color: "#8BC34A",
-  },
-  {
-    id: 3.3,
-    text_1: "Love",
-    text_2: "Peace",
-    father: 8,
-    color: "#c72e99",
-  },
-  {
-    id: 4.1,
-    text_1: "Hope",
-    text_2: "Life",
-    father: 8,
-    color: "#2eecc7",
-  },
-];
+var data = [];
+var simulated = []
+for (let i = 0; i < jsonData.length; i++) {
+  for (let j = 0; j < jsonData[i].length; j++) {
+    if (i != 0 && j == 0) {
+      continue;
+    }
+    if (j == jsonData[i].length - 1) {
+      // the last state, blueing the chosen one
+      for (let k = 0; k < jsonData[i][j].length; k++) {
+        if (jsonData[i][j][k].chosen) {
+          simulated.push(jsonData[i][j][k].id);
+          jsonData[i][j][k].color = "orange";
+        }
+      }
+    }
+    for (let k = 0; k < jsonData[i][j].length; k++) {
+      if (jsonData[i][j][k].prior != null) {
+        jsonData[i][j][k].prior = jsonData[i][j][k].prior.toFixed(7);
+      }
+      if (jsonData[i][j][k].critic != null) {
+        jsonData[i][j][k].critic = jsonData[i][j][k].critic.toFixed(7);
+      }
+      if (jsonData[i][j][k].ucb_score != null) {
+        jsonData[i][j][k].ucb_score = jsonData[i][j][k].ucb_score.toFixed(7);
+      }
+      if (jsonData[i][j][k].score != null) {
+        jsonData[i][j][k].score = jsonData[i][j][k].score.toFixed(7);
+      }
+      // jsonData[i][j][k].critic = jsonData[i][j][k].critic.toFixed(5);
+      // jsonData[i][j][k].ucb_score = jsonData[i][j][k].ucb_score.toFixed(5);
+      // jsonData[i][j][k].score = jsonData[i][j][k].score.toFixed(5);
+      if (simulated.includes(jsonData[i][j][k].id)) {
+        jsonData[i][j][k].color = "orange";
+      }
+    }
+    data.push(jsonData[i][j]);
+  }
+}
+for (let i = 0; i < data.length; i++) {
+  if (data[i][0].parent == "null") {
+    data[i][0].parent = null;
+  }
+}
+console.log(data);
 
 var myTree = Treeviz.create({
-  data: data_1, // for Typescript projects only.
+  data: data[0], // for Typescript projects only.
   htmlId: "tree",
   idKey: "id",
   hasFlatData: true,
-  relationnalField: "father",
-  nodeWidth: 120,
+  relationnalField: "parent",
+  nodeWidth: 275,
   hasPan: true,
   hasZoom: true,
-  nodeHeight: 80,
+  nodeHeight: 400,
   mainAxisNodeSpacing: 2,
-  isHorizontal: false,
+  isHorizontal: true,
   renderNode: function renderNode(node) {
+    
+
     return (
-      "<div class='box' style='cursor:pointer;height:" +
-      node.settings.nodeHeight +
+      "<div class='box' style='cursor:pointer;height:auto" +
       "px; width:" +
       node.settings.nodeWidth +
-      "px;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:" +
-      node.data.color +
-      ";border-radius:5px;'><div><strong>" +
-      node.data.text_1 +
-      "</strong></div><div>is</div><div><i>" +
-      node.data.text_2 +
-      "</i></div></div>"
+      "px;display:flex;flex-direction:column;justify-content:center;align-items:left;margin: auto;background-color:" +
+      node.data.color + ";border-radius:5px'>" +
+        "<div style='margin-left:1em; margin-top:0.5em; margin-bottom: 0.5em; margin:right:1em'>" +
+          "<div>" +
+            // "<p>" +
+            //   "<strong> Node id:" +node.data.id +" </strong>" +
+            // "</p>" +
+            // centering id
+            "<div class='box' style='display:flex;justify-content:center;background-color: #180161; margin-right:1.5em'>" +
+              "<i style='color:white'>" +node.data.id+ "</i>"+
+            "</div>" +
+
+            "<strong> Node text: </strong>" +
+            "<details>" +
+              "<summary>" + 
+                "<i style='color:green'>" +node.data.text.slice(0, 200)+ "</i>"+
+              "</summary>" +
+                "<i style='color:green'>" +node.data.text.slice(200,-1)+ "</i>"+
+            "</details>" +
+        "</div>" +
+        "<div style='margin-left:2em; margin-top:0.6em'>" +
+          "<div>" +
+            "<strong> Prior score &nbsp &#160: </strong>" + "<i style='color:red'>" +node.data.prior+ "</i>"+
+          "</div>" +
+          "<div>" +
+            "<strong> Critics &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp: </strong>" + "<i style='color:red'>" +node.data.critic+ "</i>"+
+          "</div>" + 
+          "<div>" +
+            "<strong> UCB score &nbsp &nbsp : </strong>" + "<i style='color:red'>" +node.data.ucb_score+ "</i>"+
+          "</div>" + 
+          "<div>" +
+            "<strong> Score &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp : </strong>" + "<i style='color:red'>" +node.data.score+ "</i>"+
+          "</div>" + 
+          "<div>" +
+            "<strong> Visited cnt &#160 &nbsp: </strong>" + "<i style='color:red'>" +node.data.visit_count+ "</i>"+ 
+          "</div>" + 
+          "<div>" +
+            "<strong> Parent cnt &#160 &nbsp: </strong>" + "<i style='color:red'>" +node.data.parent_visit_count+ "</i>"+ 
+          "</div>" + 
+        "</div>" +
+      "</div>"
     );
   },
   linkWidth: (node) => {
-    return node.data.id * 2;
+    return 4;
   },
   linkShape: "curve",
   linkColor: () => `#B0BEC5`,
@@ -186,31 +123,43 @@ var myTree = Treeviz.create({
     console.log(node.data);
   },
 });
-myTree.refresh(data_1);
+data[0][0].color = "#B0BEC5";
+myTree.refresh(data[0]);
 
 var toggle = true;
 var addButton = document.querySelector("#add");
-var removeButton = document.querySelector("#remove");
-var doTasksButton = document.querySelector("#doTasks");
+var cnt = 0;
+// for loop to add data for each 3s
+
 addButton?.addEventListener("click", function () {
-  console.log("addButton clicked");
-  toggle ? myTree.refresh(data_2) : myTree.refresh(data_3);
+  setInterval(function () {
+    console.log("addButton clicked");
+    var a;
+    if (cnt % 2 == 0){
+      a = cnt/2;
+    } else {
+      a = (cnt-1)/2;
+    }
+    const l = data[a];
+    if (cnt % 2 == 0) {
+      for (let i = 0; i < l.length; i++) {
+        if (l[i].color != "orange") {
+          l[i].color = "#B0BEC5";
+        }
+      }
+      myTree.refresh(l);
+    }
+    if (cnt % 2 == 1) {
+      for (let i = 0; i < l.length; i++) {
+        if (l[i].chosen) {
+          if (l[i].color != "orange") {
+            l[i].color = "yellow";
+          }
+        }     
+      }
+      myTree.refresh(l);
+    }
+    cnt += 1;
+  }, 500);
   toggle = false;
-});
-removeButton?.addEventListener("click", function () {
-  console.log("removeButton clicked");
-  myTree.refresh(data_1);
-});
-doTasksButton?.addEventListener("click", function () {
-  addButton?.click();
-  removeButton?.click();
-  addButton?.click();
-  removeButton?.click();
-  removeButton?.click();
-  addButton?.click();
-  removeButton?.click();
-  addButton?.click();
-  addButton?.click();
-  removeButton?.click();
-  removeButton?.click();
 });
