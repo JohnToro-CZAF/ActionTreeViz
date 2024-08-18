@@ -5,6 +5,7 @@ import jsonData from './tree_states.json';
 
 var data = [];
 var simulated = []
+var led_to_correct = []
 for (let i = 0; i < jsonData.length; i++) {
   for (let j = 0; j < jsonData[i].length; j++) {
     if (i != 0 && j == 0) {
@@ -13,6 +14,10 @@ for (let i = 0; i < jsonData.length; i++) {
     if (j == jsonData[i].length - 1) {
       // the last state, blueing the chosen one
       for (let k = 0; k < jsonData[i][j].length; k++) {
+        if (jsonData[i][j][k].correct) {
+          led_to_correct.push(jsonData[i][j][k].id);
+          jsonData[i][j][k].color = "#F6F193";
+        }
         if (jsonData[i][j][k].chosen) {
           simulated.push(jsonData[i][j][k].id);
           jsonData[i][j][k].color = "orange";
@@ -35,6 +40,9 @@ for (let i = 0; i < jsonData.length; i++) {
       // jsonData[i][j][k].critic = jsonData[i][j][k].critic.toFixed(5);
       // jsonData[i][j][k].ucb_score = jsonData[i][j][k].ucb_score.toFixed(5);
       // jsonData[i][j][k].score = jsonData[i][j][k].score.toFixed(5);
+      if (led_to_correct.includes(jsonData[i][j][k].id)) {
+        jsonData[i][j][k].color = "#F6F193";
+      }
       if (simulated.includes(jsonData[i][j][k].id)) {
         jsonData[i][j][k].color = "orange";
       }
@@ -127,11 +135,12 @@ data[0][0].color = "#B0BEC5";
 myTree.refresh(data[0]);
 
 var toggle = true;
-var addButton = document.querySelector("#add");
+var searchButton = document.querySelector("#search");
 var cnt = 0;
 // for loop to add data for each 3s
+var lastL = null
 
-addButton?.addEventListener("click", function () {
+searchButton?.addEventListener("click", function () {
   setInterval(function () {
     console.log("addButton clicked");
     var a;
@@ -140,10 +149,13 @@ addButton?.addEventListener("click", function () {
     } else {
       a = (cnt-1)/2;
     }
+    if (a > data.length - 1) {
+      return;
+    }
     const l = data[a];
     if (cnt % 2 == 0) {
       for (let i = 0; i < l.length; i++) {
-        if (l[i].color != "orange") {
+        if (l[i].color != "orange" && l[i].color != "#F6F193") {
           l[i].color = "#B0BEC5";
         }
       }
@@ -152,14 +164,39 @@ addButton?.addEventListener("click", function () {
     if (cnt % 2 == 1) {
       for (let i = 0; i < l.length; i++) {
         if (l[i].chosen) {
-          if (l[i].color != "orange") {
+          if (l[i].color != "orange" && l[i].color != "#F6F193") {
             l[i].color = "yellow";
           }
         }     
       }
+      lastL = l;
       myTree.refresh(l);
     }
     cnt += 1;
   }, 500);
   toggle = false;
+});
+
+var enableToggle = false;
+
+var enableButton = document.querySelector("#enable");
+enableButton?.addEventListener("click", function () {
+  console.log("enableButton clicked");
+  if (enableToggle == false) {
+    const l = data[data.length - 1];
+    for (let i = 0; i < l.length; i++) {
+      if (l[i].color != "orange" && l[i].color != "#F6F193") {
+        l[i].color = "#B0BEC5";
+        if (l[i].done) {
+          l[i].color = "#D9EDBF";
+        }
+      }
+    }
+    enableToggle = true;
+  } else {
+    var l = lastL;
+    myTree.refresh(l);
+    enableToggle = false;
+  }
+  
 });
